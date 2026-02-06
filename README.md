@@ -1,2 +1,2 @@
-# eindwerk-network-ingineer
+# Eindwerk-network-ingineer
 Eindwerk documentatie
