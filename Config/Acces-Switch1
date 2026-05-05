@@ -1,0 +1,59 @@
+
+!*******************************************************************************
+!! Access-Switch1
+!!*******************************************************************************
+enable
+configure terminal
+
+banner motd ^C
+--------------------------
+- Authorized access only -
+--------------------------
+^C
+
+no ip domain-lookup
+hostname Access-Switch1
+
+line console 0
+ logging synchronous
+exit
+
+line vty 0 15
+ logging synchronous
+exit
+
+vlan 10
+ name MGMT
+vlan 99
+ name NATIVE_VLAN
+exit
+
+interface vlan 10
+ ip address 10.10.10.100 255.255.255.0
+ no shutdown
+exit
+
+ip default-gateway 10.10.10.254
+
+spanning-tree mode rapid-pvst
+spanning-tree pathcost method long
+spanning-tree portfast edge bpduguard default
+
+interface range gi0/0-1
+ description END-DEVICES-MGMT
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+exit
+
+interface range gi1/0-1
+ description UPLINK-TO-DISTRIBUTION-SWITCHES
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,99
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+do write memory

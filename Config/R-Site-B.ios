@@ -1,0 +1,68 @@
+!********************************************
+!! R-Site-B
+!!********************************************
+enable
+configure terminal
+
+banner motd ^C
+--------------------------
+- Authorized access only -
+--------------------------
+^C
+
+no ip domain-lookup
+ip routing
+hostname R-Site-B
+
+enable secret cisco
+service password-encryption
+
+ip domain-name cisco.local
+username admin secret cisco
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+
+line console 0
+ logging synchronous
+exit
+
+ipv6 unicast-routing
+
+!ip route 0.0.0.0 0.0.0.0 10.255.2.1
+
+line vty 0 15
+ login local
+ transport input ssh
+ exec-timeout 0 0
+ logging synchronous
+exit
+
+interface gi0/0
+ description TO-WAN-ROUTER
+ ip address 10.255.2.2 255.255.255.252
+ ipv6 address 2001:db8:3::2/64
+ no shutdown
+exit
+
+interface gi0/1
+ ip address 10.20.40.254 255.255.255.0
+ ipv6 address 2001:db8:40b::1/64
+ no shutdown
+exit
+
+router bgp 65004
+ neighbor 10.255.2.1 remote-as 65000
+ neighbor 2001:db8:3::1 remote-as 65000
+
+ address-family ipv4
+  neighbor 10.255.2.1 activate
+  network 10.20.40.0 mask 255.255.255.0
+  redistribute connected
+  exit-address-family
+ 
+ address-family ipv6
+  neighbor 2001:db8:3::1 activate
+  network 2001:db8:40b::/64
+  redistribute connected
+ exit-address-family
+exit

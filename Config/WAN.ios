@@ -1,0 +1,118 @@
+!********************************************
+!! WAN-ROUTER
+!!********************************************
+enable
+configure terminal
+
+banner motd ^C
+--------------------------
+- Authorized access only -
+--------------------------
+^C
+
+no ip domain-lookup
+ip routing
+ipv6 unicast-routing
+hostname WAN-ROUTER
+
+enable secret cisco
+service password-encryption
+
+ip domain-name cisco.local
+username admin secret cisco
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+
+line console 0
+ logging synchronous
+exit
+
+line vty 0 15
+ login local
+ transport input ssh
+ exec-timeout 0 0
+ logging synchronous
+exit
+
+
+ interface gi0/0
+ description LINK-TO-INTERNET
+ ip address dhcp
+ ipv6 address autoconfig
+ ip nat outside
+ no shutdown
+
+interface gi0/1
+description LINK-TO-TELENET
+ ip address 10.255.1.1 255.255.255.252
+ ipv6 address 2001:db8:1::1/64
+ ip nat inside
+ no shutdown
+
+interface gi0/2
+description LINK-TO-PROXIMUS
+ ip address 10.255.1.5 255.255.255.252
+ ipv6 address 2001:db8:2::1/64
+ ip nat inside
+ no shutdown
+
+interface gi0/3
+ description LINK-TO-SITE-B
+ ip address 10.255.2.1 255.255.255.252
+ ipv6 address 2001:db8:3::1/64
+ ip nat inside
+ no shutdown
+
+! FIX: access-list vereenvoudigd - de /8 dekt de /16 al
+! Maar beter: expliciete subnetten gebruiken
+access-list 1 permit 10.10.0.0 0.0.255.255
+access-list 1 permit 10.0.0.0 0.0.255.255
+access-list 1 permit 10.255.0.0 0.0.255.255
+access-list 1 permit 10.20.40.0 0.0.0.255
+
+
+ip nat inside source list 1 interface gi0/0 overload
+
+! FIX: statische fallback route naar internet
+ip route 0.0.0.0 0.0.0.0 192.168.122.1
+ipv6 route ::/0 GigabitEthernet0/0
+
+!router bgp 65000
+! neighbor 10.255.1.2 remote-as 65002
+! neighbor 10.255.1.2 default-originate
+! neighbor 10.255.1.6 remote-as 65003
+! neighbor 10.255.1.6 default-originate
+! neighbor 10.255.2.2 remote-as 65004
+! neighbor 10.255.2.2 default-originate
+
+router bgp 65000
+ bgp log-neighbor-changes
+
+ neighbor 10.255.1.2 remote-as 65002
+ neighbor 10.255.1.6 remote-as 65003
+ neighbor 10.255.2.2 remote-as 65004
+ neighbor 2001:db8:1::2 remote-as 65002
+ neighbor 2001:db8:2::2 remote-as 65003
+ neighbor 2001:db8:3::2 remote-as 65004
+
+ address-family ipv4
+  neighbor 10.255.1.2 activate
+  neighbor 10.255.1.6 activate
+  neighbor 10.255.2.2 activate
+  neighbor 10.255.1.2 default-originate
+  neighbor 10.255.1.6 default-originate
+  neighbor 10.255.2.2 default-originate
+ exit-address-family
+
+ address-family ipv6
+  neighbor 2001:db8:1::2 activate
+  neighbor 2001:db8:2::2 activate
+  neighbor 2001:db8:3::2 activate
+  neighbor 2001:db8:1::2 default-originate
+  neighbor 2001:db8:2::2 default-originate
+  neighbor 2001:db8:3::2 default-originate
+ exit-address-family
+
+exit
+
+do write memory
