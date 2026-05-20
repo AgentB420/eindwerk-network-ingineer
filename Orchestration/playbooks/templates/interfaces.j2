@@ -1,0 +1,55 @@
+{% if interfaces is defined %}
+
+{% for intf in interfaces %}
+interface {{ intf.name }}
+
+{% if intf.description is defined %}
+ description {{ intf.description }}
+{% endif %}
+
+{% if intf.no_switchport | default(false) %}
+ no switchport
+{% endif %}
+
+{% if intf.switchport_mode is defined %}
+ switchport mode {{ intf.switchport_mode }}
+{% endif %}
+
+{% if intf.access_vlan is defined %}
+ switchport access vlan {{ intf.access_vlan }}
+{% endif %}
+
+{% if intf.ip_address_dhcp | default(false) %}
+ ip address dhcp
+{% elif intf.ip_address is defined %}
+ ip address {{ intf.ip_address | ansible.utils.ipaddr('address') }} {{ intf.ip_address | ansible.utils.ipaddr('netmask') }}
+{% endif %}
+
+{% if intf.ipv6_address_autoconfig | default(false) %}
+ ipv6 address autoconfig
+{% elif intf.ipv6_address is defined %}
+ ipv6 address {{ intf.ipv6_address }}
+{% endif %}
+
+{% if intf.ip_nat_inside | default(false) %}
+ ip nat inside
+{% endif %}
+
+{% if intf.ip_nat_outside | default(false) %}
+ ip nat outside
+{% endif %}
+
+{% if intf.spanning_tree_portfast | default(false) %}
+ spanning-tree portfast
+{% endif %}
+
+{% if intf.shutdown | default(false) %}
+ shutdown
+{% else %}
+ no shutdown
+{% endif %}
+
+exit
+
+{% endfor %}
+{% endif %}

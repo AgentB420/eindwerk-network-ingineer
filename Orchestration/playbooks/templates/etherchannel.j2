@@ -1,0 +1,18 @@
+{% if etherchannels is defined %}
+
+{% for po in etherchannels %}
+
+interface Port-channel{{ po.id }}
+ switchport
+ no shutdown
+exit
+
+{% for member in po.members %}
+interface {{ member }}
+ channel-group {{ po.id }} mode {{ po.mode }}
+ no shutdown
+exit
+
+{% endfor %}
+{% endfor %}
+{% endif %}

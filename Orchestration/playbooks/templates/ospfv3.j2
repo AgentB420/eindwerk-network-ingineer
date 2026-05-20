@@ -1,0 +1,15 @@
+{% if ospfv3 is defined and ospfv3 %}
+
+ipv6 router ospf {{ ospfv3.process_id }}
+ router-id {{ ospfv3.router_id }}
+
+{% for area in ospfv3.areas | default([]) %}
+
+{% for intf in area.interfaces %}
+interface {{ intf }}
+ ipv6 ospf {{ ospfv3.process_id }} area {{ area.area }}
+ exit
+{% endfor %}
+
+{% endfor %}
+{% endif %}

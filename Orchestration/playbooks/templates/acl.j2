@@ -1,0 +1,27 @@
+{% if standard_acls is defined %}
+
+{% for acl in standard_acls %}
+ip access-list standard {{ acl.name }}
+
+{% for rule in acl.rules %}
+ {{ rule.action }} {{ rule.source }}
+{% endfor %}
+
+exit
+
+{% endfor %}
+{% endif %}
+
+{% if extended_acls is defined %}
+
+{% for acl in extended_acls %}
+ip access-list extended {{ acl.name }}
+
+{% for rule in acl.rules %}
+ {{ rule }}
+{% endfor %}
+
+exit
+
+{% endfor %}
+{% endif %}

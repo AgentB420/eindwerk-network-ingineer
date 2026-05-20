@@ -308,6 +308,310 @@ all:
                 interfaces:
                   - GigabitEthernet0/1
                   - GigabitEthernet0/3
+    distribution:
+  hosts:
+
+    Distri-Switch1:
+      ansible_host: 10.10.10.2
+      ansible_network_os: ios
+      ansible_connection: network_cli
+
+      vlans:
+        - id: 10
+          name: MGMT
+
+        - id: 20
+          name: OFFICE
+
+        - id: 30
+          name: IT
+
+        - id: 40
+          name: SALES
+
+        - id: 99
+          name: NATIVE_VLAN
+
+      interfaces:
+        - name: Vlan10
+          description: GATEWAY-MGMT
+          ip_address: 10.10.10.2/24
+          ipv6_address: 2001:db8:10::1/64
+          shutdown: false
+
+        - name: Vlan20
+          description: GATEWAY-OFFICE
+          ip_address: 10.10.20.2/24
+          ipv6_address: 2001:db8:20::1/64
+          shutdown: false
+
+        - name: Vlan30
+          description: GATEWAY-IT
+          ip_address: 10.10.30.2/24
+          ipv6_address: 2001:db8:30::1/64
+          shutdown: false
+
+        - name: Vlan40
+          description: GATEWAY-SALES
+          ip_address: 10.10.40.2/24
+          ipv6_address: 2001:db8:40::1/64
+          shutdown: false
+
+        - name: GigabitEthernet0/0
+          description: LINK-TO-R-CORE-1
+          no_switchport: true
+          ip_address: 10.0.0.6/30
+          ipv6_address: 2001:db8:0:2::2/64
+          shutdown: false
+
+      hsrp:
+        - vlan: 10
+          virtual_ip: 10.10.10.254
+          priority: 110
+          preempt: true
+
+        - vlan: 20
+          virtual_ip: 10.10.20.254
+          priority: 110
+          preempt: true
+
+        - vlan: 30
+          virtual_ip: 10.10.30.254
+          priority: 90
+          preempt: true
+
+        - vlan: 40
+          virtual_ip: 10.10.40.254
+          priority: 90
+          preempt: true
+
+      etherchannels:
+        - id: 10
+          mode: active
+          members:
+            - GigabitEthernet0/1
+            - GigabitEthernet0/2
+
+      spanning_tree:
+        mode: rapid-pvst
+        root_primary_vlans:
+          - 10
+          - 20
+        root_secondary_vlans:
+          - 30
+          - 40
+
+      ospfv3:
+        process_id: 1
+        router_id: 10.10.10.1
+
+    Distri-Switch2:
+      ansible_host: 10.10.10.3
+      ansible_network_os: ios
+      ansible_connection: network_cli
+
+      vlans:
+        - id: 10
+          name: MGMT
+
+        - id: 20
+          name: OFFICE
+
+        - id: 30
+          name: IT
+
+        - id: 40
+          name: SALES
+
+        - id: 99
+          name: NATIVE_VLAN
+
+      interfaces:
+        - name: Vlan10
+          description: GATEWAY-MGMT
+          ip_address: 10.10.10.3/24
+          ipv6_address: 2001:db8:10::2/64
+          shutdown: false
+
+        - name: Vlan20
+          description: GATEWAY-OFFICE
+          ip_address: 10.10.20.3/24
+          ipv6_address: 2001:db8:20::2/64
+          shutdown: false
+
+        - name: Vlan30
+          description: GATEWAY-IT
+          ip_address: 10.10.30.3/24
+          ipv6_address: 2001:db8:30::2/64
+          shutdown: false
+
+        - name: Vlan40
+          description: GATEWAY-SALES
+          ip_address: 10.10.40.3/24
+          ipv6_address: 2001:db8:40::2/64
+          shutdown: false
+
+        - name: GigabitEthernet0/0
+          description: LINK-TO-R-CORE-2
+          no_switchport: true
+          ip_address: 10.0.0.10/30
+          ipv6_address: 2001:db8:0:3::2/64
+          shutdown: false
+
+      hsrp:
+        - vlan: 10
+          virtual_ip: 10.10.10.254
+          priority: 90
+          preempt: true
+
+        - vlan: 20
+          virtual_ip: 10.10.20.254
+          priority: 90
+          preempt: true
+
+        - vlan: 30
+          virtual_ip: 10.10.30.254
+          priority: 110
+          preempt: true
+
+        - vlan: 40
+          virtual_ip: 10.10.40.254
+          priority: 110
+          preempt: true
+
+      etherchannels:
+        - id: 10
+          mode: active
+          members:
+            - GigabitEthernet0/1
+            - GigabitEthernet0/2
+
+      spanning_tree:
+        mode: rapid-pvst
+        root_primary_vlans:
+          - 30
+          - 40
+        root_secondary_vlans:
+          - 10
+          - 20
+
+      ospfv3:
+        process_id: 1
+        router_id: 20.20.20.1
+
+access_switches:
+  hosts:
+
+    Access-Switch1:
+      ansible_host: 10.10.10.100
+      ansible_network_os: ios
+      ansible_connection: network_cli
+
+      vlans:
+        - id: 10
+          name: MGMT
+
+        - id: 99
+          name: NATIVE_VLAN
+
+      interfaces:
+        - name: GigabitEthernet0/0
+          description: END-DEVICES-MGMT
+          switchport_mode: access
+          access_vlan: 10
+          spanning_tree_portfast: true
+          shutdown: false
+
+        - name: GigabitEthernet0/1
+          description: END-DEVICES-MGMT
+          switchport_mode: access
+          access_vlan: 10
+          spanning_tree_portfast: true
+          shutdown: false
+
+      spanning_tree:
+        mode: rapid-pvst
+
+    Access-Switch2:
+      ansible_host: 10.10.10.101
+      ansible_network_os: ios
+      ansible_connection: network_cli
+
+      vlans:
+        - id: 10
+          name: MGMT
+
+        - id: 20
+          name: OFFICE
+
+        - id: 30
+          name: IT
+
+      interfaces:
+        - name: GigabitEthernet0/0
+          description: END-DEVICES-OFFICE
+          switchport_mode: access
+          access_vlan: 20
+          shutdown: false
+
+        - name: GigabitEthernet0/1
+          description: END-DEVICES-IT
+          switchport_mode: access
+          access_vlan: 30
+          shutdown: false
+
+      spanning_tree:
+        mode: rapid-pvst
+
+    Access-Switch3:
+      ansible_host: 10.10.10.103
+      ansible_network_os: ios
+      ansible_connection: network_cli
+
+      vlans:
+        - id: 10
+          name: MGMT
+
+        - id: 40
+          name: SALES
+
+      interfaces:
+        - name: GigabitEthernet0/0
+          description: END-DEVICES-SALES
+          switchport_mode: access
+          access_vlan: 40
+          shutdown: false
+
+        - name: GigabitEthernet0/1
+          description: END-DEVICES-SALES
+          switchport_mode: access
+          access_vlan: 40
+          shutdown: false
+
+      spanning_tree:
+        mode: rapid-pvst
+
+    Access-Switch-B:
+      ansible_host: 10.20.40.2
+      ansible_network_os: ios
+      ansible_connection: network_cli
+
+      vlans:
+        - id: 40
+          name: SALES
+
+      interfaces:
+        - name: GigabitEthernet0/0
+          description: TO-R-SITE-B
+          switchport_mode: access
+          access_vlan: 40
+          shutdown: false
+
+        - name: GigabitEthernet0/1
+          description: TO-PC
+          switchport_mode: access
+          access_vlan: 40
+          shutdown: false             
   vars:
     ansible_user: admin
     ansible_password: cisco

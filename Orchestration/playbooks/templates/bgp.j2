@@ -1,0 +1,41 @@
+{% if bgp is defined %}
+
+router bgp {{ bgp.as_number }}
+
+ bgp log-neighbor-changes
+
+{% for n in bgp.neighbors_ipv4 | default([]) %}
+ neighbor {{ n.neighbor }} remote-as {{ n.remote_as }}
+{% endfor %}
+
+{% for n in bgp.neighbors_ipv6 | default([]) %}
+ neighbor {{ n.neighbor }} remote-as {{ n.remote_as }}
+{% endfor %}
+
+ address-family ipv4
+
+{% for n in bgp.neighbors_ipv4 | default([]) %}
+  neighbor {{ n.neighbor }} activate
+{% endfor %}
+
+{% for net in bgp.networks_ipv4 | default([]) %}
+  network {{ net }}
+{% endfor %}
+
+ exit-address-family
+
+ address-family ipv6
+
+{% for n in bgp.neighbors_ipv6 | default([]) %}
+  neighbor {{ n.neighbor }} activate
+{% endfor %}
+
+{% for net in bgp.networks_ipv6 | default([]) %}
+  network {{ net }}
+{% endfor %}
+
+ exit-address-family
+
+exit
+
+{% endif %}
