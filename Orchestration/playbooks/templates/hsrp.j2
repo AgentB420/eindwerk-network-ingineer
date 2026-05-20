@@ -1,0 +1,16 @@
+{% if hsrp is defined %}
+
+{% for h in hsrp %}
+interface Vlan{{ h.vlan }}
+
+ standby {{ h.vlan }} ip {{ h.virtual_ip }}
+ standby {{ h.vlan }} priority {{ h.priority }}
+
+{% if h.preempt | default(false) %}
+ standby {{ h.vlan }} preempt
+{% endif %}
+
+exit
+
+{% endfor %}
+{% endif %}

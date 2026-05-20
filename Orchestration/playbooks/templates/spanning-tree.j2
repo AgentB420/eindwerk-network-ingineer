@@ -1,0 +1,13 @@
+{% if spanning_tree is defined %}
+
+spanning-tree mode {{ spanning_tree.mode }}
+
+{% for vlan in spanning_tree.root_primary_vlans | default([]) %}
+spanning-tree vlan {{ vlan }} root primary
+{% endfor %}
+
+{% for vlan in spanning_tree.root_secondary_vlans | default([]) %}
+spanning-tree vlan {{ vlan }} root secondary
+{% endfor %}
+
+{% endif %}

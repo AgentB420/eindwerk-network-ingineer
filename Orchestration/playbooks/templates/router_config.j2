@@ -1,0 +1,93 @@
+hostname {{ inventory_hostname }}
+
+no ip domain-lookup
+ip routing
+ipv6 unicast-routing
+
+ip domain-name cisco.local
+
+username admin secret cisco
+
+{% for interface in interfaces %}
+interface {{ interface.name }}
+
+{% if interface.description is defined %}
+description {{ interface.description }}
+{% endif %}
+
+{% if interface.ip_address is defined %}
+ip address {{ interface.ip_address }}
+{% endif %}
+
+{% if interface.ip_address_dhcp | default(false) %}
+ip address dhcp
+{% endif %}
+
+{% if interface.ipv6_address is defined %}
+ipv6 address {{ interface.ipv6_address }}
+{% endif %}
+
+{% if interface.ipv6_address_autoconfig | default(false) %}
+ipv6 address autoconfig
+{% endif %}
+
+{% if interface.ip_nat_inside | default(false) %}
+ip nat inside
+{% endif %}
+
+{% if interface.ip_nat_outside | default(false) %}
+ip nat outside
+{% endif %}
+
+no shutdown
+!
+{% endfor %}
+
+{% if standard_acls is defined %}
+{% for acl in standard_acls %}
+ip access-list standard ACL{{ acl.acl_number }}
+{% for entry in acl.entries %}
+{{ entry }}
+{% endfor %}
+!
+{% endfor %}
+{% endif %}
+
+{% if nat is defined %}
+ip nat inside source list {{ nat.inside_source.acl }} interface {{ nat.inside_source.outside_interface }} overload
+{% endif %}
+
+{% if bgp is defined %}
+router bgp {{ bgp.as_number }}
+
+{% for neighbor in bgp.neighbors_ipv4 | default([]) %}
+neighbor {{ neighbor.neighbor }} remote-as {{ neighbor.remote_as }}
+{% endfor %}
+
+{% for neighbor in bgp.neighbors_ipv6 | default([]) %}
+neighbor {{ neighbor.neighbor }} remote-as {{ neighbor.remote_as }}
+{% endfor %}
+
+address-family ipv4
+
+{% for network in bgp.networks_ipv4 | default([]) %}
+  network {{ network }}
+{% endfor %}
+
+exit-address-family
+
+address-family ipv6
+
+{% for network in bgp.networks_ipv6 | default([]) %}
+  network {{ network }}
+{% endfor %}
+
+exit-address-family
+!
+{% endif %}
+
+{% if ospfv3 is defined %}
+router ospfv3 {{ ospfv3.process_id }}
+router-id {{ ospfv3.router_id }}
+!
+{% endif %}

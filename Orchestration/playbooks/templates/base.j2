@@ -1,0 +1,57 @@
+!********************************************
+!! {{ inventory_hostname }}
+!!********************************************
+
+hostname {{ inventory_hostname }}
+
+no ip domain-lookup
+ip routing
+ipv6 unicast-routing
+
+service password-encryption
+
+enable secret {{ ansible_become_password }}
+
+ip domain-name {{ domain_name }}
+
+username {{ local_user.name }} privilege 15 secret {{ local_user.secret }}
+
+banner motd ^C
+--------------------------------
+ Authorized access only
+--------------------------------
+^C
+
+crypto key generate rsa modulus 1024
+ip ssh version 2
+
+line console 0
+ logging synchronous
+ exit
+
+line vty 0 15
+ login local
+ transport input ssh
+ exec-timeout 0 0
+ logging synchronous
+ exit
+
+{% include 'vlans.j2' %}
+
+{% include 'interfaces.j2' %}
+
+{% include 'acl.j2' %}
+
+{% include 'nat.j2' %}
+
+{% include 'bgp.j2' %}
+
+{% include 'ospfv3.j2' %}
+
+{% include 'hsrp.j2' %}
+
+{% include 'etherchannel.j2' %}
+
+{% include 'spanning-tree.j2' %}
+
+end

@@ -1,0 +1,5 @@
+{% if nat is defined %}
+
+ip nat inside source list {{ nat.inside_source.acl }} interface {{ nat.inside_source.outside_interface }} overload
+
+{% endif %}
